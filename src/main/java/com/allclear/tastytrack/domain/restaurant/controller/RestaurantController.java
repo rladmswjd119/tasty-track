@@ -1,6 +1,5 @@
 package com.allclear.tastytrack.domain.restaurant.controller;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
@@ -15,8 +14,6 @@ import com.allclear.tastytrack.domain.auth.UserDetailsImpl;
 import com.allclear.tastytrack.domain.restaurant.dto.RestaurantDetail;
 import com.allclear.tastytrack.domain.restaurant.entity.Restaurant;
 import com.allclear.tastytrack.domain.restaurant.service.RestaurantService;
-import com.allclear.tastytrack.domain.review.dto.ReviewResponse;
-import com.allclear.tastytrack.domain.review.entity.Review;
 import com.allclear.tastytrack.domain.review.service.ReviewService;
 import com.allclear.tastytrack.domain.user.service.UserService;
 
@@ -40,49 +37,6 @@ public class RestaurantController {
     private final ReviewService reviewService;
     private final UserService userService;
 
-    @Operation(summary = "음식점의 상세정보 조회", description = "특정 음식점의 상세정보를 조회하는 API")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "해당 음식점의 상세정보가 조회되었습니다.",
-                    content = @Content(mediaType = "application/json")),
-            @ApiResponse(responseCode = "400", description = "입력값을 확인해주세요."),
-            @ApiResponse(responseCode = "404", description = "조회할 수 없는 음식점입니다.")
-    })
-    @GetMapping("/{id}")
-    public ResponseEntity<RestaurantDetail> getRestaurantById(@AuthenticationPrincipal UserDetailsImpl userDetails,
-            @PathVariable int id) {
-
-        userService.userCheck(userDetails.getUsername());
-
-        RestaurantDetail restaurantDetailInCache = restaurantService.checkRedisCache(id);
-        if (restaurantDetailInCache != null) {
-            return ResponseEntity.ok(restaurantDetailInCache);
-        }
-
-        Restaurant restaurant = restaurantService.getRestaurantById(id, 0);
-        List<Review> reviews = reviewService.getAllReviewsByRestaurantId(id);
-
-        List<ReviewResponse> reviewResponses = new ArrayList<>();
-        if (!reviews.isEmpty()) {
-            reviewResponses = reviewService.createListReviewResponse(restaurant, reviews, reviewResponses);
-        }
-        RestaurantDetail restaurantDetail = RestaurantDetail.builder()
-                .name(restaurant.getName())
-                .type(restaurant.getType())
-                .status(restaurant.getStatus())
-                .rateScore(restaurant.getRateScore())
-                .oldAddress(restaurant.getOldAddress())
-                .newAddress(restaurant.getNewAddress())
-                .lon(restaurant.getLon())
-                .lat(restaurant.getLat())
-                .lastUpdateAt(restaurant.getLastUpdatedAt())
-                .reviewResponses(reviewResponses)
-                .build();
-
-        restaurantService.saveCache(id, restaurantDetail);
-
-        return ResponseEntity.ok(restaurantDetail);
-    }
-
     @Operation(summary = "맛집 목록 조회", description = "제공된 필터 조건에 따라 맛집 목록을 반환합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "맛집 목록을 성공적으로 조회하였습니다.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Restaurant.class))),
@@ -103,6 +57,28 @@ public class RestaurantController {
         }
 
         return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "음식점의 상세정보 조회", description = "특정 음식점의 상세정보를 조회하는 API")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "해당 음식점의 상세정보가 조회되었습니다.",
+                    content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "400", description = "입력값을 확인해주세요."),
+            @ApiResponse(responseCode = "404", description = "조회할 수 없는 음식점입니다.")
+    })
+    @GetMapping("/{id}")
+    public ResponseEntity<RestaurantDetail> getRestaurantById(@AuthenticationPrincipal UserDetailsImpl userDetails,
+            @PathVariable int id) {
+
+        userService.userCheck(userDetails.getUsername());
+        int countReview = reviewService.countReviews(id);
+
+        if (countReview < 50) {
+            RestaurantDetail restaurantDetail = restaurantService.getRestaurantDetail(id);
+            return ResponseEntity.ok(restaurantDetail);
+        }
+
+        return ResponseEntity.ok(restaurantService.checkRedisCache(id));
     }
 
     @GetMapping("/region")

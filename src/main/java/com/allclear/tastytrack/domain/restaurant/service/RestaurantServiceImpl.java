@@ -18,7 +18,10 @@ import com.allclear.tastytrack.domain.restaurant.dto.RestaurantListRequest;
 import com.allclear.tastytrack.domain.restaurant.entity.Restaurant;
 import com.allclear.tastytrack.domain.restaurant.repository.RestaurantRepository;
 import com.allclear.tastytrack.domain.review.dto.ReviewRequest;
+import com.allclear.tastytrack.domain.review.dto.ReviewResponse;
+import com.allclear.tastytrack.domain.review.entity.Review;
 import com.allclear.tastytrack.domain.review.repository.ReviewRepository;
+import com.allclear.tastytrack.domain.review.service.ReviewService;
 import com.allclear.tastytrack.domain.user.dto.UserLocationInfo;
 import com.allclear.tastytrack.domain.user.enums.Coordinate;
 import com.allclear.tastytrack.global.exception.CustomException;
@@ -37,8 +40,33 @@ public class RestaurantServiceImpl implements RestaurantService {
     private final RestaurantRepository restaurantRepository;
     private final ReviewRepository reviewRepository;
     private final RegionRepository regionRepository;
+    private final ReviewService reviewService;
 
     private final RedisUtil redisUtil;
+
+    @Override
+    public RestaurantDetail getRestaurantDetail(int id) {
+
+        Restaurant restaurant = getRestaurantById(id, 0);
+        List<Review> reviews = reviewService.getAllReviewsByRestaurantId(id);
+
+        List<ReviewResponse> reviewResponses = new ArrayList<>();
+        if (!reviews.isEmpty()) {
+            reviewResponses = reviewService.createListReviewResponse(restaurant, reviews, reviewResponses);
+        }
+        return RestaurantDetail.builder()
+                .name(restaurant.getName())
+                .type(restaurant.getType())
+                .status(restaurant.getStatus())
+                .rateScore(restaurant.getRateScore())
+                .oldAddress(restaurant.getOldAddress())
+                .newAddress(restaurant.getNewAddress())
+                .lon(restaurant.getLon())
+                .lat(restaurant.getLat())
+                .lastUpdateAt(restaurant.getLastUpdatedAt())
+                .reviewResponses(reviewResponses)
+                .build();
+    }
 
     @Override
     public Restaurant getRestaurantById(int id, int deletedYn) {
@@ -145,15 +173,17 @@ public class RestaurantServiceImpl implements RestaurantService {
 
         RestaurantDetail restaurantDetail1 = redisUtil.getCache(id);
 
-        if (restaurantDetail1 != null) {
-            log.info("data in cache!");
+        if (restaurantDetail1 == null) {
+            log.info("no data in cache!");
+            restaurantDetail1 = getRestaurantDetail(id);
+            saveCache(id, restaurantDetail1);
         }
 
+        log.info("data in cache!");
         return restaurantDetail1;
     }
 
-    @Override
-    public void saveCache(int id, RestaurantDetail restaurantDetail1) {
+    private void saveCache(int id, RestaurantDetail restaurantDetail1) {
 
         redisUtil.setCache(id, restaurantDetail1);
     }

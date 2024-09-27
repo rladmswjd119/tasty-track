@@ -1,8 +1,5 @@
 package com.allclear.tastytrack.domain.review.controller;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,10 +9,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.allclear.tastytrack.domain.auth.UserDetailsImpl;
 import com.allclear.tastytrack.domain.restaurant.dto.RestaurantDetail;
-import com.allclear.tastytrack.domain.restaurant.entity.Restaurant;
 import com.allclear.tastytrack.domain.restaurant.service.RestaurantService;
 import com.allclear.tastytrack.domain.review.dto.ReviewRequest;
-import com.allclear.tastytrack.domain.review.dto.ReviewResponse;
 import com.allclear.tastytrack.domain.review.entity.Review;
 import com.allclear.tastytrack.domain.review.service.ReviewService;
 import com.allclear.tastytrack.global.exception.CustomException;
@@ -49,26 +44,7 @@ public class ReviewController {
         Review review = null;
         try {
             review = reviewService.createReview(request, userDetails.getUsername());
-            Restaurant restaurant = restaurantService.updateRestaurantScore(request);
-            List<Review> reviews = reviewService.getAllReviewsByRestaurantId(request.getRestaurantId());
-
-            List<ReviewResponse> reviewResponses = new ArrayList<>();
-            if (!reviews.isEmpty()) {
-                reviewResponses = reviewService.createListReviewResponse(restaurant, reviews, reviewResponses);
-            }
-
-            RestaurantDetail restaurantDetail = RestaurantDetail.builder()
-                    .name(restaurant.getName())
-                    .type(restaurant.getType())
-                    .status(restaurant.getStatus())
-                    .rateScore(restaurant.getRateScore())
-                    .oldAddress(restaurant.getOldAddress())
-                    .newAddress(restaurant.getNewAddress())
-                    .lon(restaurant.getLon())
-                    .lat(restaurant.getLat())
-                    .lastUpdateAt(restaurant.getLastUpdatedAt())
-                    .reviewResponses(reviewResponses)
-                    .build();
+            RestaurantDetail restaurantDetail = restaurantService.getRestaurantDetail(request.getRestaurantId());
 
             return ResponseEntity.ok(restaurantDetail);
 

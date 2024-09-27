@@ -24,6 +24,6 @@ public interface RestaurantService {
 
     RestaurantDetail checkRedisCache(int id);
 
-    void saveCache(int id, RestaurantDetail restaurantDetail1);
+    RestaurantDetail getRestaurantDetail(int id);
 
 }

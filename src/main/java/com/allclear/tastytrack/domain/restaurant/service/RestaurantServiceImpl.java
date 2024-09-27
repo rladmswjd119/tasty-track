@@ -183,9 +183,10 @@ public class RestaurantServiceImpl implements RestaurantService {
         return restaurantDetail1;
     }
 
+
     private void saveCache(int id, RestaurantDetail restaurantDetail1) {
 
-        redisUtil.setCache(id, restaurantDetail1);
+        redisUtil.setCache(id, restaurantDetail);
     }
 
     /**

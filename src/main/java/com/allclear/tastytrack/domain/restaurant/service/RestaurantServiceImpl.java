@@ -76,7 +76,6 @@ public class RestaurantServiceImpl implements RestaurantService {
             throw new CustomException(ErrorCode.NOT_EXISTENT_RESTAURANT);
         }
 
-        double beforeScore = restaurant.getRateScore();
         int countReview = reviewRepository.countByRestaurantId(request.getRestaurantId());
         int score = request.getScore();
 

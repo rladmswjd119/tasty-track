@@ -1,5 +1,10 @@
 package com.allclear.tastytrack.domain.user.service;
 
+import org.springframework.http.HttpHeaders;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.allclear.tastytrack.domain.auth.UserAuth;
 import com.allclear.tastytrack.domain.user.dto.LoginRequest;
 import com.allclear.tastytrack.domain.user.dto.UserCreateRequest;
@@ -9,12 +14,9 @@ import com.allclear.tastytrack.domain.user.entity.User;
 import com.allclear.tastytrack.domain.user.repository.UserRepository;
 import com.allclear.tastytrack.global.exception.CustomException;
 import com.allclear.tastytrack.global.exception.ErrorCode;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpHeaders;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -66,7 +68,7 @@ public class UserServiceImpl implements UserService {
      *
      * @param username          계정명
      * @param userUpdateRequest 위도, 경도
-     * @return                  수정된 회원정보 반환
+     * @return 수정된 회원정보 반환
      */
     @Override
     @Transactional
@@ -112,7 +114,7 @@ public class UserServiceImpl implements UserService {
      * @param  username 계정명
      * @return 회원 객체 반환
      */
-    private User userCheck(String username) {
+    public User userCheck(String username) {
 
         return userRepository.findByUsername(username).orElseThrow(
                 () -> new CustomException(ErrorCode.USER_NOT_EXIST)

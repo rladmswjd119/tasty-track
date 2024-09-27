@@ -51,7 +51,7 @@ public class RestaurantController {
     public ResponseEntity<RestaurantDetail> getRestaurantById(@AuthenticationPrincipal UserDetailsImpl userDetails,
             @PathVariable int id) {
 
-        userService.getUserInfo(userDetails.getUsername());
+        userService.userCheck(userDetails.getUsername());
 
         RestaurantDetail restaurantDetailInCache = restaurantService.checkRedisCache(id);
         if (restaurantDetailInCache != null) {

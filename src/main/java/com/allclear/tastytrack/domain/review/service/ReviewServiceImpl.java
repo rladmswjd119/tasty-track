@@ -77,6 +77,12 @@ public class ReviewServiceImpl implements ReviewService {
         return reviewResponses;
     }
 
+    @Override
+    public int countReviews(int restaurantId) {
+
+        return reviewRepository.countByRestaurantId(restaurantId);
+    }
+
     /**
      * List<Review>를 List<CompletableFuture<ReviewResponse>>로 변경하는 메서드입니다.
      * 작성자 : 김은정

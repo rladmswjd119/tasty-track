@@ -18,4 +18,6 @@ public interface ReviewService {
     List<ReviewResponse> createListReviewResponse(Restaurant restaurant, List<Review> reviews,
             List<ReviewResponse> reviewResponses);
 
+    int countReviews(int restaurantId);
+
 }

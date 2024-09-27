@@ -80,4 +80,15 @@ public class ReviewServiceImplTest {
         assertThat(ex.getMessage()).isEqualTo(ErrorCode.USER_NOT_EXIST.getMessage());
     }
 
+    @Test
+    @DisplayName("리뷰 개수를 조회합니다.")
+    public void countReviewsTest() {
+
+        given(reviewRepository.countByRestaurantId(anyInt())).willReturn(anyInt());
+
+        reviewServiceImpl.countReviews(anyInt());
+
+        verify(reviewRepository, times(1)).countByRestaurantId(anyInt());
+    }
+
 }
